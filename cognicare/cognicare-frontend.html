@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CogniCare Frontend</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root, [data-theme="light"] {
+      --text-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
+      --text-sm: clamp(0.875rem, 0.8rem + 0.35vw, 1rem);
+      --text-base: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
+      --text-lg: clamp(1.125rem, 1rem + 0.75vw, 1.5rem);
+      --text-xl: clamp(1.5rem, 1.2rem + 1.25vw, 2.25rem);
+      --space-1: 0.25rem; --space-2: 0.5rem; --space-3: 0.75rem; --space-4: 1rem; --space-5: 1.25rem; --space-6: 1.5rem; --space-8: 2rem; --space-10: 2.5rem; --space-12: 3rem;
+      --color-bg: #f7f6f2; --color-surface: #f9f8f5; --color-surface-2: #fbfbf9; --color-surface-offset: #f3f0ec; --color-border: #d4d1ca; --color-divider: #dcd9d5;
+      --color-text: #28251d; --color-text-muted: #7a7974; --color-text-inverse: #f9f8f4;
+      --color-primary: #01696f; --color-primary-hover: #0c4e54; --color-primary-highlight: #cedcd8;
+      --color-success: #437a22; --color-warning: #964219; --color-error: #a12c7b; --color-blue: #006494;
+      --shadow-sm: 0 1px 2px oklch(0.2 0.01 80 / 0.06); --shadow-md: 0 4px 12px oklch(0.2 0.01 80 / 0.08); --shadow-lg: 0 12px 32px oklch(0.2 0.01 80 / 0.12);
+      --radius-sm: 0.375rem; --radius-md: 0.5rem; --radius-lg: 0.75rem; --radius-xl: 1rem; --radius-full: 9999px;
+      --font-body: 'Inter', sans-serif;
+    }
+    [data-theme="dark"] {
+      --color-bg: #171614; --color-surface: #1c1b19; --color-surface-2: #201f1d; --color-surface-offset: #1d1c1a; --color-border: #393836; --color-divider: #262523;
+      --color-text: #cdccca; --color-text-muted: #797876; --color-text-inverse: #2b2a28;
+      --color-primary: #4f98a3; --color-primary-hover: #227f8b; --color-primary-highlight: #313b3b;
+      --color-success: #6daa45; --color-warning: #bb653b; --color-error: #d163a7; --color-blue: #5591c7;
+      --shadow-sm: 0 1px 2px oklch(0 0 0 / 0.2); --shadow-md: 0 4px 12px oklch(0 0 0 / 0.3); --shadow-lg: 0 12px 32px oklch(0 0 0 / 0.4);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { -webkit-text-size-adjust: none; text-size-adjust: none; scroll-behavior: smooth; }
+    body { min-height: 100dvh; font-family: var(--font-body); font-size: var(--text-base); line-height: 1.6; color: var(--color-text); background: var(--color-bg); }
+    img, svg, canvas { display:block; max-width:100%; }
+    button, input, select, textarea { font: inherit; color: inherit; }
+    button { cursor:pointer; border:none; background:none; }
+    a, button, input, textarea, select { transition: all 180ms cubic-bezier(0.16, 1, 0.3, 1); }
+    :focus-visible { outline: 2px solid var(--color-primary); outline-offset: 3px; border-radius: var(--radius-sm); }
+    .shell { display:grid; grid-template-columns: 280px 1fr; min-height:100dvh; }
+    .sidebar { background: var(--color-surface); border-right:1px solid color-mix(in srgb, var(--color-text) 12%, transparent); padding: var(--space-6); display:flex; flex-direction:column; gap: var(--space-6); position:sticky; top:0; height:100dvh; }
+    .brand { display:flex; align-items:center; gap: var(--space-3); }
+    .brand-mark { width:42px; height:42px; border-radius:14px; background: linear-gradient(135deg, var(--color-primary), color-mix(in srgb, var(--color-primary) 55%, white)); display:grid; place-items:center; box-shadow: var(--shadow-md); color: white; }
+    .brand h1 { font-size: var(--text-lg); line-height:1.1; }
+    .brand p { font-size: var(--text-sm); color: var(--color-text-muted); }
+    .stack { display:flex; flex-direction:column; gap: var(--space-4); }
+    .nav-btn, .theme-btn, .logout-btn { width:100%; display:flex; align-items:center; justify-content:space-between; gap:var(--space-3); padding: 0.9rem 1rem; border-radius: var(--radius-lg); background: transparent; border:1px solid transparent; text-align:left; }
+    .nav-btn:hover, .theme-btn:hover, .logout-btn:hover { background: var(--color-surface-offset); }
+    .nav-btn.active { background: var(--color-primary-highlight); color: var(--color-primary); border-color: color-mix(in srgb, var(--color-primary) 20%, transparent); }
+    .main { padding: var(--space-6); display:flex; flex-direction:column; gap: var(--space-6); }
+    .topbar { display:flex; justify-content:space-between; align-items:center; gap: var(--space-4); flex-wrap:wrap; }
+    .title-block h2 { font-size: var(--text-xl); }
+    .title-block p { color: var(--color-text-muted); }
+    .status-pill { padding: 0.55rem 0.85rem; border-radius: var(--radius-full); background: var(--color-surface); border:1px solid color-mix(in srgb, var(--color-text) 12%, transparent); font-size: var(--text-sm); }
+    .panel { background: var(--color-surface); border:1px solid color-mix(in srgb, var(--color-text) 12%, transparent); border-radius: var(--radius-xl); box-shadow: var(--shadow-sm); }
+    .panel-head { padding: var(--space-5); border-bottom:1px solid var(--color-divider); display:flex; align-items:center; justify-content:space-between; gap: var(--space-3); }
+    .panel-body { padding: var(--space-5); }
+    .hidden { display:none !important; }
+    .auth-wrap { max-width: 480px; margin: 4vh auto; }
+    .auth-tabs { display:grid; grid-template-columns:1fr 1fr; background: var(--color-surface-offset); padding: var(--space-1); border-radius: var(--radius-lg); gap: var(--space-1); }
+    .auth-tab { padding: 0.8rem; border-radius: calc(var(--radius-lg) - 4px); }
+    .auth-tab.active { background: var(--color-surface); box-shadow: var(--shadow-sm); }
+    form { display:flex; flex-direction:column; gap: var(--space-4); }
+    .field { display:flex; flex-direction:column; gap: var(--space-2); }
+    .field label { font-size: var(--text-sm); font-weight:600; }
+    .field input, .field select, .field textarea { width:100%; padding: 0.95rem 1rem; border-radius: var(--radius-lg); border:1px solid color-mix(in srgb, var(--color-text) 14%, transparent); background: var(--color-surface-2); }
+    .field textarea { min-height: 120px; resize: vertical; }
+    .btn { padding: 0.95rem 1.1rem; border-radius: var(--radius-lg); font-weight:700; }
+    .btn-primary { background: var(--color-primary); color: var(--color-text-inverse); }
+    .btn-primary:hover { background: var(--color-primary-hover); }
+    .btn-secondary { background: var(--color-surface-offset); color: var(--color-text); }
+    .grid { display:grid; gap: var(--space-5); }
+    .grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .stat-card { padding: var(--space-5); border-radius: var(--radius-xl); background: var(--color-surface); border:1px solid color-mix(in srgb, var(--color-text) 12%, transparent); }
+    .stat-card span { font-size: var(--text-sm); color: var(--color-text-muted); }
+    .stat-card strong { display:block; font-size: 2rem; line-height:1.1; margin-top: var(--space-2); }
+    .chat-layout { display:grid; grid-template-columns: 1.1fr 0.9fr; gap: var(--space-5); }
+    .chat-box { height: 58vh; overflow:auto; padding: var(--space-4); display:flex; flex-direction:column; gap: var(--space-4); background: var(--color-surface-2); border-radius: var(--radius-lg); }
+    .bubble { max-width: 82%; padding: 0.95rem 1rem; border-radius: 1.1rem; box-shadow: var(--shadow-sm); }
+    .bubble.user { align-self:flex-end; background: var(--color-primary); color: var(--color-text-inverse); border-bottom-right-radius: 0.35rem; }
+    .bubble.ai { align-self:flex-start; background: var(--color-surface); border:1px solid color-mix(in srgb, var(--color-text) 12%, transparent); border-bottom-left-radius: 0.35rem; }
+    .bubble small { display:block; margin-top: var(--space-2); opacity:0.8; font-size: 0.78rem; }
+    .chat-form { display:grid; grid-template-columns: 1fr auto; gap: var(--space-3); margin-top: var(--space-4); }
+    .message-meta { display:flex; flex-wrap:wrap; gap: 0.5rem; margin-top: var(--space-2); }
+    .tag { font-size: 0.78rem; padding: 0.25rem 0.55rem; border-radius: var(--radius-full); background: var(--color-surface-offset); color: var(--color-text-muted); }
+    .tag.negative { background: color-mix(in srgb, var(--color-error) 14%, transparent); color: var(--color-error); }
+    .tag.positive { background: color-mix(in srgb, var(--color-success) 14%, transparent); color: var(--color-success); }
+    .tag.neutral { background: color-mix(in srgb, var(--color-blue) 14%, transparent); color: var(--color-blue); }
+    .history-list, .patient-list { display:flex; flex-direction:column; gap: var(--space-3); max-height: 58vh; overflow:auto; }
+    .history-item, .patient-item { padding: 1rem; border-radius: var(--radius-lg); background: var(--color-surface-2); border:1px solid color-mix(in srgb, var(--color-text) 10%, transparent); }
+    .empty { color: var(--color-text-muted); padding: var(--space-6); text-align:center; }
+    .alert { padding: 0.9rem 1rem; border-radius: var(--radius-lg); font-size: var(--text-sm); }
+    .alert.error { background: color-mix(in srgb, var(--color-error) 12%, transparent); color: var(--color-error); }
+    .alert.success { background: color-mix(in srgb, var(--color-success) 12%, transparent); color: var(--color-success); }
+    .footer-note { color: var(--color-text-muted); font-size: var(--text-sm); }
+    @media (max-width: 1100px) {
+      .chat-layout, .grid-3, .grid-2, .shell { grid-template-columns: 1fr; }
+      .sidebar { position:relative; height:auto; }
+      .chat-box, .history-list, .patient-list { height:auto; max-height:none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M12 3c4.97 0 9 3.58 9 8s-4.03 8-9 8c-1.53 0-2.97-.34-4.23-.94L3 19l1.18-3.56C3.43 14.16 3 13.12 3 11c0-4.42 4.03-8 9-8Z"></path>
+            <path d="M9 10.5h6M9 13.5h4"></path>
+          </svg>
+        </div>
+        <div>
+          <h1>CogniCare</h1>
+          <p>Mental health support dashboard</p>
+        </div>
+      </div>
+
+      <div class="stack" id="sidebarControls">
+        <button class="theme-btn panel" data-theme-toggle aria-label="Toggle theme">
+          <span>Switch theme</span>
+          <span id="themeIcon">◐</span>
+        </button>
+        <button class="logout-btn panel hidden" id="logoutBtn">
+          <span>Logout</span>
+          <span>↗</span>
+        </button>
+      </div>
+
+      <nav class="stack hidden" id="nav">
+        <button class="nav-btn active" data-view="overview">Overview <span>01</span></button>
+        <button class="nav-btn" data-view="chat">Chat <span>02</span></button>
+        <button class="nav-btn" data-view="history">History <span>03</span></button>
+        <button class="nav-btn" data-view="analytics">Analytics <span>04</span></button>
+        <button class="nav-btn hidden" id="clinicianNav" data-view="clinician">Clinician <span>05</span></button>
+      </nav>
+    </aside>
+
+    <main class="main">
+      <section id="authView">
+        <div class="topbar">
+          <div class="title-block">
+            <h2>Welcome to CogniCare</h2>
+            <p>Login or register to access your personalized mental health dashboard.</p>
+          </div>
+        </div>
+
+        <div class="auth-wrap panel">
+          <div class="panel-head"><strong>Authentication</strong></div>
+          <div class="panel-body">
+            <div id="authAlert" class="hidden" style="margin-top:1rem"></div>
+            <div class="auth-tabs" style="margin-top:1rem; margin-bottom:1rem;">
+              <button class="auth-tab active" data-auth-tab="login">Login</button>
+              <button class="auth-tab" data-auth-tab="register">Register</button>
+            </div>
+
+            <form id="loginForm">
+              <div class="field"><label>Email</label><input type="email" id="loginEmail" required /></div>
+              <div class="field"><label>Password</label><input type="password" id="loginPassword" required /></div>
+              <button class="btn btn-primary" type="submit">Login</button>
+            </form>
+
+            <form id="registerForm" class="hidden">
+              <div class="field"><label>Name</label><input type="text" id="registerName" required /></div>
+              <div class="field"><label>Email</label><input type="email" id="registerEmail" required /></div>
+              <div class="field"><label>Password</label><input type="password" id="registerPassword" required /></div>
+              <div class="field">
+                <label>Role</label>
+                <select id="registerRole">
+                  <option value="patient">patient</option>
+                  <option value="clinician">clinician</option>
+                </select>
+              </div>
+              <button class="btn btn-primary" type="submit">Create account</button>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <section id="appView" class="hidden">
+        <div class="topbar">
+          <div class="title-block">
+            <h2 id="viewTitle">Overview</h2>
+            <p id="viewSubtitle">Quick insight into usage, mood signals, and support activity.</p>
+          </div>
+          <div class="status-pill" id="sessionStatus">Signed out</div>
+        </div>
+
+        <section class="view" data-panel="overview">
+          <div class="grid grid-3">
+            <div class="stat-card"><span>Total messages</span><strong id="totalMessages">0</strong></div>
+            <div class="stat-card"><span>Average load</span><strong id="avgLoad">0.00</strong></div>
+            <div class="stat-card"><span>Dominant sentiment</span><strong id="dominantSentiment">neutral</strong></div>
+          </div>
+          <div class="grid grid-2" style="margin-top:1.25rem;">
+            <div class="panel"><div class="panel-head"><strong>Sentiment mix</strong></div><div class="panel-body"><canvas id="sentimentChart" height="240"></canvas></div></div>
+            <div class="panel"><div class="panel-head"><strong>Message load trend</strong></div><div class="panel-body"><canvas id="loadChart" height="240"></canvas></div></div>
+          </div>
+        </section>
+
+        <section class="view hidden" data-panel="chat">
+          <div class="chat-layout">
+            <div class="panel">
+              <div class="panel-head"><strong>Conversation</strong><span id="welcomeState">Ready</span></div>
+              <div class="panel-body">
+                <div id="chatBox" class="chat-box"></div>
+                <form id="chatForm" class="chat-form">
+                  <input id="messageInput" type="text" placeholder="Type how you feel today..." required />
+                  <button class="btn btn-primary" type="submit">Send</button>
+                </form>
+              </div>
+            </div>
+            <div class="panel">
+              <div class="panel-head"><strong>Current response details</strong></div>
+              <div class="panel-body" id="chatInsight">
+                <p class="empty">Send a message to inspect response time, sentiment, and cognitive load.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="view hidden" data-panel="history">
+          <div class="panel">
+            <div class="panel-head"><strong>Recent chat history</strong><button class="btn btn-secondary" id="refreshHistoryBtn" type="button">Refresh</button></div>
+            <div class="panel-body"><div id="historyList" class="history-list"></div></div>
+          </div>
+        </section>
+
+        <section class="view hidden" data-panel="analytics">
+          <div class="grid grid-2">
+            <div class="panel"><div class="panel-head"><strong>Daily metrics</strong></div><div class="panel-body"><canvas id="dailyMetricsChart" height="240"></canvas></div></div>
+            <div class="panel"><div class="panel-head"><strong>Heatmap data</strong></div><div class="panel-body"><canvas id="heatmapMetricsChart" height="240"></canvas></div></div>
+          </div>
+          <div class="panel" style="margin-top:1.25rem;"><div class="panel-head"><strong>Correlation metrics</strong></div><div class="panel-body"><canvas id="correlationMetricsChart" height="240"></canvas></div></div>
+        </section>
+
+        <section class="view hidden" data-panel="clinician">
+          <div class="panel">
+            <div class="panel-head"><strong>Assigned patients</strong><button class="btn btn-secondary" id="refreshPatientsBtn" type="button">Refresh</button></div>
+            <div class="panel-body"><div id="patientList" class="patient-list"></div></div>
+          </div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const state = {
+      token: null,
+      user: null,
+      activeView: 'overview',
+      authTab: 'login',
+      charts: {},
+      messages: [],
+      activePatientId: null
+    };
+
+    const el = id => document.getElementById(id);
+
+    function setAlert(targetId, type, text) {
+      const box = el(targetId);
+      box.className = `alert ${type}`;
+      box.textContent = text;
+      box.classList.remove('hidden');
+    }
+
+    function hideAlert(targetId) {
+      el(targetId).classList.add('hidden');
+    }
+
+    function getApiBase() {
+      return 'http://127.0.0.1:8000/api';
+    }
+
+    async function apiFetch(path, options = {}) {
+      const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
+      if (state.token) headers.Authorization = `Bearer ${state.token}`;
+      const response = await fetch(`${getApiBase()}${path}`, { ...options, headers });
+      const text = await response.text();
+      let data;
+      try { data = text ? JSON.parse(text) : {}; } catch { data = { raw: text }; }
+      if (!response.ok) throw new Error(data.detail || data.message || `Request failed: ${response.status}`);
+      return data;
+    }
+
+    function toggleTheme() {
+      const root = document.documentElement;
+      const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      root.setAttribute('data-theme', next);
+      el('themeIcon').textContent = next === 'dark' ? '☀' : '◐';
+    }
+
+    function setAuthTab(tab) {
+      state.authTab = tab;
+      document.querySelectorAll('[data-auth-tab]').forEach(btn => btn.classList.toggle('active', btn.dataset.authTab === tab));
+      el('loginForm').classList.toggle('hidden', tab !== 'login');
+      el('registerForm').classList.toggle('hidden', tab !== 'register');
+      hideAlert('authAlert');
+    }
+
+    function showApp() {
+      el('authView').classList.add('hidden');
+      el('appView').classList.remove('hidden');
+      el('nav').classList.remove('hidden');
+      el('logoutBtn').classList.remove('hidden');
+      el('sessionStatus').textContent = `${state.user?.name || 'User'} · ${state.user?.role || 'member'}`;
+      el('clinicianNav').classList.toggle('hidden', state.user?.role !== 'clinician');
+      setView('overview');
+    }
+
+    function logout() {
+      state.token = null;
+      state.user = null;
+      state.messages = [];
+      el('appView').classList.add('hidden');
+      el('nav').classList.add('hidden');
+      el('logoutBtn').classList.add('hidden');
+      el('authView').classList.remove('hidden');
+    }
+
+    function setView(view) {
+      state.activeView = view;
+      document.querySelectorAll('.nav-btn[data-view]').forEach(btn => btn.classList.toggle('active', btn.dataset.view === view));
+      document.querySelectorAll('.view').forEach(panel => panel.classList.toggle('hidden', panel.dataset.panel !== view));
+      const titles = {
+        overview: ['Overview', 'Quick insight into usage, mood signals, and support activity.'],
+        chat: ['Chat', 'Talk to the assistant and inspect response metrics live.'],
+        history: ['History', 'Review stored messages and responses from the backend.'],
+        analytics: ['Analytics', 'Inspect backend metrics endpoints in a readable format.'],
+        clinician: ['Clinician', 'See patient-side visibility for clinician accounts.']
+      };
+      el('viewTitle').textContent = titles[view][0];
+      el('viewSubtitle').textContent = titles[view][1];
+      if (view === 'overview') refreshOverview();
+      if (view === 'history') loadHistory();
+      if (view === 'analytics') loadAnalytics();
+      if (view === 'clinician' && state.user?.role === 'clinician') loadPatients();
+      if (view === 'chat' && !el('chatBox').children.length) loadWelcome();
+    }
+
+    function renderBubble(content, role = 'ai', meta = {}) {
+      const bubble = document.createElement('article');
+      bubble.className = `bubble ${role}`;
+      bubble.innerHTML = `<div>${content}</div>`;
+      if (meta.timestamp || meta.sentiment || meta.cognitive_load_score !== undefined) {
+        const small = document.createElement('small');
+        const parts = [];
+        if (meta.timestamp) parts.push(new Date(meta.timestamp).toLocaleString());
+        if (meta.sentiment) parts.push(`sentiment: ${meta.sentiment}`);
+        if (meta.cognitive_load_score !== undefined) parts.push(`load: ${meta.cognitive_load_score}`);
+        small.textContent = parts.join(' · ');
+        bubble.appendChild(small);
+      }
+      el('chatBox').appendChild(bubble);
+      el('chatBox').scrollTop = el('chatBox').scrollHeight;
+    }
+
+    function updateChatInsight(data) {
+      const sentimentClass = data.sentiment || 'neutral';
+      el('chatInsight').innerHTML = `
+        <h3 style="margin-bottom:0.75rem">Latest exchange</h3>
+        <p style="margin-bottom:0.75rem">The backend classified this message and returned adaptive metadata for the response.</p>
+        <div class="message-meta">
+          <span class="tag ${sentimentClass}">${data.sentiment || 'neutral'}</span>
+          <span class="tag">Load ${data.cognitive_load_score ?? '0'}</span>
+          <span class="tag">${data.response_time ?? 0}s</span>
+          <span class="tag">Adaptive ${data.adapted_response ? 'yes' : 'no'}</span>
+        </div>
+        <div style="margin-top:1rem; display:grid; gap:0.75rem;">
+          <div class="history-item"><strong>User</strong><p>${data.user_message || ''}</p></div>
+          <div class="history-item"><strong>Assistant</strong><p>${data.ai_response || ''}</p></div>
+        </div>
+      `;
+    }
+
+    async function handleLogin(e) {
+      e.preventDefault();
+      hideAlert('authAlert');
+      try {
+        const data = await apiFetch('/auth/login', {
+          method: 'POST',
+          body: JSON.stringify({ email: el('loginEmail').value, password: el('loginPassword').value })
+        });
+        state.token = data.token;
+        state.user = data.user || { name: 'User', role: 'patient' };
+        showApp();
+      } catch (err) {
+        setAlert('authAlert', 'error', err.message);
+      }
+    }
+
+    async function handleRegister(e) {
+      e.preventDefault();
+      hideAlert('authAlert');
+      try {
+        const data = await apiFetch('/auth/register', {
+          method: 'POST',
+          body: JSON.stringify({
+            name: el('registerName').value,
+            email: el('registerEmail').value,
+            password: el('registerPassword').value,
+            role: el('registerRole').value
+          })
+        });
+        state.token = data.token;
+        state.user = data.user || { name: el('registerName').value, role: el('registerRole').value };
+        showApp();
+      } catch (err) {
+        setAlert('authAlert', 'error', err.message);
+      }
+    }
+
+    async function loadWelcome() {
+      try {
+        const data = await apiFetch('/chat/welcome');
+        el('chatBox').innerHTML = '';
+        renderBubble(data.ai_response || 'Welcome', 'ai', data);
+        el('welcomeState').textContent = 'Welcome';
+      } catch (err) {
+        el('welcomeState').textContent = err.message;
+      }
+    }
+
+    async function handleChat(e) {
+      e.preventDefault();
+      const message = el('messageInput').value.trim();
+      if (!message) return;
+      renderBubble(message, 'user', { timestamp: new Date().toISOString() });
+      el('messageInput').value = '';
+      try {
+        const data = await apiFetch('/chat/send', { method: 'POST', body: JSON.stringify({ message }) });
+        renderBubble(data.ai_response, 'ai', data);
+        state.messages.push(data);
+        updateChatInsight(data);
+        refreshOverview();
+      } catch (err) {
+        renderBubble(`Error: ${err.message}`, 'ai');
+      }
+    }
+
+    async function loadHistory() {
+      const list = el('historyList');
+      list.innerHTML = '<div class="empty">Loading history...</div>';
+      try {
+        const data = await apiFetch('/chat/history');
+        if (!Array.isArray(data) || !data.length) {
+          list.innerHTML = '<div class="empty">No history found yet.</div>';
+          return;
+        }
+        list.innerHTML = data.map(item => `
+          <article class="history-item">
+            <strong>${item.sender === 'ai' ? 'Assistant' : 'User'}</strong>
+            <p>${item.ai_response && item.user_message || ''}</p>
+            <div class="message-meta" style="margin-top:0.7rem;">
+              ${item.sentiment ? `<span class="tag ${item.sentiment}">${item.sentiment}</span>` : ''}
+              ${item.cognitive_load_score !== undefined ? `<span class="tag">Load ${item.cognitive_load_score}</span>` : ''}
+              ${item.response_time !== undefined ? `<span class="tag">${item.response_time}s</span>` : ''}
+            </div>
+          </article>
+        `).join('');
+      } catch (err) {
+        list.innerHTML = `<div class="empty">${err.message}</div>`;
+      }
+    }
+
+    async function loadAnalytics() {
+      const patientId = state.activePatientId;
+      const query = patientId ? `?patient_id=${patientId}` : '';
+      try {
+        const [daily, heatmap, correlation] = await Promise.all([
+          apiFetch(`/metrics/daily${query}`),
+          apiFetch(`/metrics/heatmap${query}`),
+          apiFetch(`/metrics/correlation${query}`)
+        ]);
+        drawAnalyticsCharts(daily, heatmap, correlation);
+      } catch (err) {
+        console.error("Analytics error", err);
+      }
+    }
+
+    function drawAnalyticsCharts(daily, heatmap, correlation) {
+      if (state.charts.daily) state.charts.daily.destroy();
+      if (state.charts.heatmap) state.charts.heatmap.destroy();
+      if (state.charts.correlation) state.charts.correlation.destroy();
+
+      const dailyCtx = el('dailyMetricsChart');
+      state.charts.daily = new Chart(dailyCtx, {
+        type: 'line',
+        data: {
+          labels: daily.map(d => d.date),
+          datasets: [
+            { label: 'Avg Sentiment', data: daily.map(d => d.avg_sentiment_score), borderColor: '#437a22', tension: 0.3, yAxisID: 'y' },
+            { label: 'Avg Load', data: daily.map(d => d.avg_cognitive_load_score || 0), borderColor: '#a12c7b', tension: 0.3, yAxisID: 'y' },
+            { label: 'Message Count', data: daily.map(d => d.message_count), type: 'bar', backgroundColor: 'rgba(1, 105, 111, 0.3)', yAxisID: 'y1' }
+          ]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: { type: 'linear', position: 'left', beginAtZero: true },
+            y1: { type: 'linear', position: 'right', beginAtZero: true, grid: { drawOnChartArea: false } }
+          }
+        }
+      });
+
+      const heatmapCtx = el('heatmapMetricsChart');
+      const heatmapData = heatmap.map(h => ({
+        x: h.hour,
+        y: h.date,
+        r: Math.max(h.interaction_count * 5, 5),
+        v: h.cognitive_load
+      }));
+      state.charts.heatmap = new Chart(heatmapCtx, {
+        type: 'bubble',
+        data: {
+          datasets: [{
+            label: 'Interactions (Size: Count, Color: Load)',
+            data: heatmapData,
+            backgroundColor: ctx => {
+              const val = ctx.raw?.v || 0;
+              const alpha = Math.min(val / 10 + 0.2, 1);
+              return `rgba(161, 44, 123, ${alpha})`;
+            }
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            x: { title: { display: true, text: 'Hour of Day' }, min: 0, max: 23 },
+            y: { type: 'category', labels: [...new Set(heatmap.map(h => h.date))] }
+          }
+        }
+      });
+
+      const corrCtx = el('correlationMetricsChart');
+      state.charts.correlation = new Chart(corrCtx, {
+        type: 'scatter',
+        data: {
+          datasets: [{
+            label: 'Sentiment vs Response Time',
+            data: correlation.map(c => ({
+              x: c.avg_response_time,
+              y: c.avg_sentiment
+            })),
+            backgroundColor: '#006494',
+            pointRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            x: { title: { display: true, text: 'Response Time (s)' }, beginAtZero: true },
+            y: { title: { display: true, text: 'Sentiment (-1 to 1)' }, min: -1, max: 1 }
+          }
+        }
+      });
+    }
+
+    window.viewPatientAnalytics = function(patientId, patientName) {
+      state.activePatientId = patientId;
+      setView('analytics');
+      el('viewTitle').textContent = `Patient Data: ${patientName}`;
+      el('viewSubtitle').textContent = `Metrics and analytics for ${patientName}.`;
+    };
+
+    async function loadPatients() {
+      const list = el('patientList');
+      list.innerHTML = '<div class="empty">Loading patients...</div>';
+      try {
+        const data = await apiFetch('/clinician/patients');
+        if (!Array.isArray(data) || !data.length) {
+          list.innerHTML = '<div class="empty">No patients returned by backend.</div>';
+          return;
+        }
+        list.innerHTML = data.map(p => `
+          <article class="patient-item" style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <strong>${p.name || 'Unnamed patient'}</strong>
+              <p>${p.email || 'No email'}</p>
+              <div class="message-meta"><span class="tag">${p.role || 'patient'}</span></div>
+            </div>
+            <button class="btn btn-secondary" onclick="viewPatientAnalytics('${p.id}', '${p.name}')">View Data</button>
+          </article>
+        `).join('');
+      } catch (err) {
+        list.innerHTML = `<div class="empty">${err.message}</div>`;
+      }
+    }
+
+    async function refreshOverview() {
+      try {
+        const history = await apiFetch('/chat/history');
+        const normalized = Array.isArray(history) ? history : [];
+        const relevant = normalized.filter(item => item.sender === 'ai' || item.ai_response || item.user_message);
+        const total = relevant.length;
+        const loads = relevant.map(m => Number(m.cognitive_load_score) || 0);
+        const avgLoad = loads.length ? (loads.reduce((a,b)=>a+b,0) / loads.length).toFixed(2) : '0.00';
+        const counts = { positive: 0, neutral: 0, negative: 0 };
+        relevant.forEach(m => { if (m.sentiment in counts) counts[m.sentiment] += 1; else counts.neutral += 1; });
+        const dominant = Object.entries(counts).sort((a,b)=>b[1]-a[1])[0]?.[0] || 'neutral';
+        el('totalMessages').textContent = String(total);
+        el('avgLoad').textContent = avgLoad;
+        el('dominantSentiment').textContent = dominant;
+        drawCharts(counts, relevant);
+      } catch (err) {
+        el('totalMessages').textContent = '—';
+        el('avgLoad').textContent = '—';
+        el('dominantSentiment').textContent = '—';
+      }
+    }
+
+    function drawCharts(counts, messages) {
+      const sentimentCtx = document.getElementById('sentimentChart');
+      const loadCtx = document.getElementById('loadChart');
+      if (state.charts.sentiment) state.charts.sentiment.destroy();
+      if (state.charts.load) state.charts.load.destroy();
+      state.charts.sentiment = new Chart(sentimentCtx, {
+        type: 'doughnut',
+        data: { labels: ['Positive','Neutral','Negative'], datasets: [{ data: [counts.positive, counts.neutral, counts.negative], backgroundColor: ['#437a22','#006494','#a12c7b'], borderWidth: 0 }] },
+        options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+      });
+      const ordered = [...messages].reverse().slice(0, 12);
+      state.charts.load = new Chart(loadCtx, {
+        type: 'line',
+        data: { labels: ordered.map((_, i) => `#${i+1}`), datasets: [{ label: 'Load score', data: ordered.map(m => Number(m.cognitive_load_score) || 0), borderColor: '#01696f', backgroundColor: 'rgba(1,105,111,0.15)', fill: true, tension: 0.35 }] },
+        options: { responsive: true, scales: { y: { beginAtZero: true, max: 10 } } }
+      });
+    }
+
+    document.querySelectorAll('[data-auth-tab]').forEach(btn => btn.addEventListener('click', () => setAuthTab(btn.dataset.authTab)));
+    document.querySelectorAll('.nav-btn[data-view]').forEach(btn => btn.addEventListener('click', () => {
+      if (btn.dataset.view === 'analytics') state.activePatientId = null;
+      setView(btn.dataset.view);
+    }));
+    document.querySelector('[data-theme-toggle]').addEventListener('click', toggleTheme);
+    el('loginForm').addEventListener('submit', handleLogin);
+    el('registerForm').addEventListener('submit', handleRegister);
+    el('chatForm').addEventListener('submit', handleChat);
+    el('refreshHistoryBtn').addEventListener('click', loadHistory);
+    el('refreshPatientsBtn').addEventListener('click', loadPatients);
+    el('logoutBtn').addEventListener('click', logout);
+
+    const preferredDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.setAttribute('data-theme', preferredDark ? 'dark' : 'light');
+    el('themeIcon').textContent = preferredDark ? '☀' : '◐';
+  </script>
+</body>
+</html>
